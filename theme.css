@@ -1,0 +1,172 @@
+import { useParams, useNavigate } from "react-router";
+import { ArrowLeft, PlayCircle, FileText, ClipboardCheck, CheckCircle } from "lucide-react";
+import { courseWeeks } from "../data/mockData";
+
+export function LearningMaterial() {
+  const { courseId, materialId } = useParams();
+  const navigate = useNavigate();
+
+  // Find the material
+  const weeks = courseWeeks[courseId || ""] || [];
+  let currentMaterial: any = null;
+  let currentWeek: any = null;
+
+  for (const week of weeks) {
+    const material = week.materials.find(m => m.id === materialId);
+    if (material) {
+      currentMaterial = material;
+      currentWeek = week;
+      break;
+    }
+  }
+
+  if (!currentMaterial) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-gray-500">Materi tidak ditemukan</p>
+      </div>
+    );
+  }
+
+  const getIcon = () => {
+    switch (currentMaterial.type) {
+      case "video":
+        return PlayCircle;
+      case "pdf":
+        return FileText;
+      case "quiz":
+      case "assignment":
+        return ClipboardCheck;
+      default:
+        return FileText;
+    }
+  };
+
+  const Icon = getIcon();
+
+  const getTypeLabel = () => {
+    switch (currentMaterial.type) {
+      case "video":
+        return "Video Pembelajaran";
+      case "pdf":
+        return "Materi PDF";
+      case "quiz":
+        return "Kuis";
+      case "assignment":
+        return "Tugas";
+      default:
+        return "Materi";
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Header */}
+      <div className="bg-primary text-white px-4 pt-6 pb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 mb-4 text-white hover:opacity-80"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Kembali</span>
+        </button>
+        
+        <div className="flex items-center gap-2 mb-2">
+          <Icon className="w-5 h-5" />
+          <span className="text-sm opacity-90">{getTypeLabel()}</span>
+        </div>
+        <h1 className="text-white">{currentMaterial.title}</h1>
+        <p className="text-white/80 text-sm mt-1">
+          Minggu {currentWeek.weekNumber} - {currentWeek.title}
+        </p>
+      </div>
+
+      {/* Content Area */}
+      <div className="px-4 mt-6">
+        {/* Material Preview */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+          {currentMaterial.type === "video" ? (
+            <div className="aspect-video bg-gray-900 flex items-center justify-center">
+              <div className="text-center text-white">
+                <PlayCircle className="w-16 h-16 mx-auto mb-3 opacity-80" />
+                <p className="text-sm">Video Player Placeholder</p>
+                <p className="text-xs opacity-60 mt-1">Durasi: {currentMaterial.duration}</p>
+              </div>
+            </div>
+          ) : currentMaterial.type === "pdf" ? (
+            <div className="aspect-[3/4] bg-gray-100 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <FileText className="w-16 h-16 mx-auto mb-3" />
+                <p className="text-sm">PDF Viewer Placeholder</p>
+                <button className="mt-3 px-4 py-2 bg-primary text-white rounded-lg text-sm">
+                  Buka PDF
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="p-8 text-center">
+              <ClipboardCheck className="w-16 h-16 mx-auto mb-3 text-primary" />
+              <h3 className="font-medium mb-2">{currentMaterial.title}</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                {currentMaterial.type === "quiz" ? "Kuis tersedia" : "Tugas tersedia"}
+              </p>
+              <button className="px-6 py-2 bg-primary text-white rounded-lg">
+                {currentMaterial.type === "quiz" ? "Mulai Kuis" : "Lihat Tugas"}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Description */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+          <h3 className="font-medium mb-3">Deskripsi</h3>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            Materi ini merupakan bagian dari Minggu {currentWeek.weekNumber}: {currentWeek.title}. 
+            Pastikan Anda memahami materi dengan baik sebelum melanjutkan ke materi berikutnya.
+          </p>
+          {currentMaterial.duration && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="text-sm text-gray-500">
+                Estimasi waktu: <span className="font-medium text-gray-900">{currentMaterial.duration}</span>
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Completion Status */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {currentMaterial.completed ? (
+                <>
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Materi Selesai</p>
+                    <p className="text-sm text-gray-500">Anda telah menyelesaikan materi ini</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Icon className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Belum Selesai</p>
+                    <p className="text-sm text-gray-500">Tandai selesai setelah mempelajari materi</p>
+                  </div>
+                </>
+              )}
+            </div>
+            {!currentMaterial.completed && (
+              <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90">
+                Tandai Selesai
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

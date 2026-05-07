@@ -1,0 +1,92 @@
+import { Search } from "lucide-react";
+import { useState } from "react";
+import { CourseCard } from "../components/CourseCard";
+import { courses } from "../data/mockData";
+
+export function Courses() {
+  const [selectedFilter, setSelectedFilter] = useState<'semua' | 'berlangsung' | 'selesai'>('semua');
+
+  // Filter courses based on selected category
+  const filteredCourses = courses.filter((course) => {
+    if (selectedFilter === 'semua') return true;
+    if (selectedFilter === 'berlangsung') return course.progress < 100;
+    if (selectedFilter === 'selesai') return course.progress === 100;
+    return true;
+  });
+
+  // Count courses by status
+  const ongoingCount = courses.filter(c => c.progress < 100).length;
+  const completedCount = courses.filter(c => c.progress === 100).length;
+
+  return (
+    <div className="pb-20">
+      {/* Header */}
+      <div className="bg-primary text-white px-4 pt-6 pb-6 rounded-b-3xl">
+        <h1 className="mb-4 text-white">Mata Kuliah Saya</h1>
+        
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Cari mata kuliah..."
+            className="w-full pl-10 pr-4 py-3 rounded-xl bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/30"
+          />
+        </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="px-4 mt-6">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <button 
+            onClick={() => setSelectedFilter('semua')}
+            className={`px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 ${
+              selectedFilter === 'semua' 
+                ? 'bg-primary text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Semua ({courses.length})
+          </button>
+          <button 
+            onClick={() => setSelectedFilter('berlangsung')}
+            className={`px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 ${
+              selectedFilter === 'berlangsung' 
+                ? 'bg-primary text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Berlangsung ({ongoingCount})
+          </button>
+          <button 
+            onClick={() => setSelectedFilter('selesai')}
+            className={`px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 ${
+              selectedFilter === 'selesai' 
+                ? 'bg-primary text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Selesai ({completedCount})
+          </button>
+        </div>
+      </div>
+
+      {/* Courses List */}
+      <div className="px-4 mt-6">
+        {filteredCourses.length > 0 ? (
+          <div className="space-y-3">
+            {filteredCourses.map((course) => (
+              <CourseCard key={course.id} course={course} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500">
+              Tidak ada mata kuliah {selectedFilter === 'selesai' ? 'yang selesai' : 'berlangsung'}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
